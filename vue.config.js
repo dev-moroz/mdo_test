@@ -3,5 +3,5 @@ module.exports = defineConfig({
   transpileDependencies: [
     'vuetify'
   ],
-  publicPath: 'mdo_test'
+  publicPath: '/mdo_test/'
 })
