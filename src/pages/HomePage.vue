@@ -1,11 +1,9 @@
 <template>
-  <div>
-    <button @click="lol">click</button>
-    <button @click="create">createRequest</button>
-    <tableComponent
+  <tableComponent
+      style="margin-top: 10px"
       :tableData="getDataFormService"
-    />
-  </div>
+      :homeData="getHomes"
+  />
 </template>
 
 <script>
@@ -20,22 +18,26 @@ export default {
       return process.env.BASE_URL
     },
     getDataFormService(){
-      return this.$store.getters.getRequests
+      return this.$store.getters['request/getRequests']
+    },
+    getHomes(){
+      return this.$store.getters['request/getHomes']
     }
   },
   methods: {
     setData(){
-      this.$store.dispatch('setRequests');
+      this.$store.dispatch('request/setRequests');
     },
-    lol(){
-      this.$store.dispatch('setFilteredRequests');
+    setHomes(){
+      this.$store.dispatch('request/setHomes');
     },
-    create(){
-      this.$store.dispatch('createRequest');
-    },
+    loadData(){
+      this.setData()
+      this.setHomes()
+    }
   },
   created(){
-    this.setData()
+    this.loadData()
   }
 }
 </script>

@@ -1,115 +1,120 @@
 <template>
-<!--  <div>-->
-<!--    <button @click="login">login</button>-->
-<!--    <v-container class="d-flex justify-center align-center" style="height: 100vh;">-->
-<!--&lt;!&ndash;      <v-row class="d-flex justify-center align-center">&ndash;&gt;-->
-<!--&lt;!&ndash;        <v-col cols="12" style="max-width: 500px;" class="d-flex justify-center align-center">&ndash;&gt;-->
-<!--          <v-card style="width: 500px;">-->
-<!--            <v-card-title>-->
-<!--              <h2 class="text-center">Вход</h2>-->
-<!--            </v-card-title>-->
+  <div class="login-page">
+    <v-container fluid class="login-page__container">
+      <v-row justify="center" align="center" style="height: 100vh;">
+        <v-col cols="12" md="4">
+          <v-card>
+            <div class="login-page__container__title">
+              <span class="text-center">Авторизация</span>
+            </div>
 
-<!--            <v-card-text>-->
-<!--              <v-form ref="loginForm" v-model="valid">-->
-<!--                &lt;!&ndash; Логин &ndash;&gt;-->
-<!--                <v-text-field-->
-<!--                    label="Логин"-->
-<!--                    v-model="login"-->
-<!--                    :rules="[rules.required]"-->
-<!--                    prepend-icon="mdi-account"-->
-<!--                ></v-text-field>-->
+            <v-card-text class="login-page__container__text">
+              <v-form ref="loginForm" v-model="valid">
+                <v-text-field
+                    label="Логин или телефон"
+                    v-model="username"
+                    :rules="[rules.required]"
+                    prepend-icon="mdi-account"
+                ></v-text-field>
 
-<!--                &lt;!&ndash; Пароль с переключением видимости &ndash;&gt;-->
-<!--                <v-text-field-->
-<!--                    label="Пароль"-->
-<!--                    v-model="password"-->
-<!--                    :type="showPassword ? 'text' : 'password'"-->
-<!--                    :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"-->
-<!--                    @click:append="togglePasswordVisibility"-->
-<!--                    :rules="[rules.required]"-->
-<!--                    prepend-icon="mdi-lock"-->
-<!--                ></v-text-field>-->
-<!--              </v-form>-->
-<!--            </v-card-text>-->
-
-<!--            <v-card-actions>-->
-<!--              <v-spacer></v-spacer>-->
-<!--              <v-btn color="primary" @click="submitLogin">Войти</v-btn>-->
-<!--            </v-card-actions>-->
-<!--          </v-card>-->
-<!--&lt;!&ndash;        </v-col>&ndash;&gt;-->
-<!--&lt;!&ndash;      </v-row>&ndash;&gt;-->
-<!--    </v-container>-->
-<!--  </div>-->
-
-  <v-container fluid>
-    <v-row justify="center" align="center" style="height: 100vh;">
-      <v-col cols="12" md="4">
-        <v-card>
-          <v-card-title class="headline">Login</v-card-title>
-          <v-card-text>
-            <v-form>
-              <v-text-field
-                  label="Email"
-                  type="email"
-                  required
-              ></v-text-field>
-              <v-text-field
-                  label="Password"
-                  type="password"
-                  required
-              ></v-text-field>
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" @click="login">Login</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+                <v-text-field
+                    label="Пароль"
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    @click:append="togglePasswordVisibility"
+                    :rules="[rules.required]"
+                    prepend-icon="mdi-lock"
+                ></v-text-field>
+              </v-form>
+            </v-card-text>
+            <v-card-actions class="justify-center login-page__container__action">
+              <v-btn class="login-page__container__action__btn" @click="login">Войти</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script>
-// import {auth} from '../service'
+import {auth} from '../service'
 export default {
   name: 'LoginPage',
   data() {
     return {
-      login: '',
+      username: '',
       password: '',
-      showPassword: false, // Переключатель видимости пароля
-      valid: false, // Валидация формы
+      showPassword: false,
+      valid: false,
       rules: {
         required: value => !!value || 'Поле обязательно для заполнения'
       }
     };
   },
   methods: {
-    // async login(){
-    //   const username = "79122333444"
-    //   const password = "123456"
-    //
-    //   await auth(username, password)
-    //   this.$router.push({ path: '/' });
-    // },
-    togglePasswordVisibility() {
-      this.showPassword = !this.showPassword;
-    },
-    submitLogin() {
+    async login(){
       if (this.$refs.loginForm.validate()) {
-        // Здесь можно добавить логику для отправки данных на сервер
-        console.log('Логин:', this.login);
-        console.log('Пароль:', this.password);
+        const isLogin = await auth(this.username, this.password)
+        if(isLogin) this.$router.push({ path: '/' });
       } else {
         console.log('Форма невалидна');
       }
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     }
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '../assets/variables.css';
 
+.login-page{
+  background-image: url('../assets/bg.jpeg');
+  background-size: cover;
+  background-position: center;
+
+  &__container{
+    background-color: rgba(0, 0, 0, 0.3);
+
+    &__title{
+      color: white;
+      background-color: var(--primary-color);
+      position: absolute;
+      top: -19px;
+      height: 55px;
+      width: calc(100% - 30px);
+      right: 15px;
+      border-radius: 5px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      span{
+        font-weight: 500;
+      }
+    }
+
+    &__text{
+      padding-top: 70px;
+      padding-bottom: 10px;
+    }
+
+    &__action {
+      padding-top: 0;
+      padding-bottom: 20px;
+      &__btn {
+        color: white;
+        background-color: var(--primary-color) !important;
+        width: 110px;
+        box-shadow: 0px 4px 4px 0px #6AAE5E40;
+      }
+    }
+  }
+}
 </style>

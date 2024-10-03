@@ -1,17 +1,28 @@
 <template>
-  <v-container>
+  <div class="table-container">
+    <div class="table__btn">
+      <button class="table__btn-create" @click="openModalCreate">создать</button>
+    </div>
+    <div class="table__filter">
+      <v-text-field
+          hide-details="auto"
+          v-model="search.request"
+          append-icon="mdi-magnify"
+          @keyup.enter="searchMethod"
+          hide-spin-buttons
+          placeholder="Поиск (№ заявки, название)"
+      ></v-text-field>
+      <v-autocomplete
+          :items="getHomes"
+          v-model="search.premise_id"
+          item-value="id"
+          item-text="full_address"
+          placeholder="Дом"
+          hide-details
+      />
+    </div>
     <v-row>
       <v-col>
-<!--        <h1 class="text-h5">Sorted Data Table</h1>-->
-
-        <!-- Loader -->
-        <v-progress-circular
-            v-if="loading"
-            indeterminate
-            color="primary"
-            class="mx-auto"
-        ></v-progress-circular>
-
         <v-data-table
             :headers="headers"
             :items="tableData"
@@ -24,8 +35,7 @@
         >
           <template v-slot:[`item.number`]="{ item }">
             <div class="table-item">
-<!--              <p>{{item.number}}</p>-->
-              <span class="table-body__number">{{ item?.number }}</span>
+              <span @click="selectRequest(item)" class="table-body__number">{{ item?.number }}</span>
             </div>
           </template>
           <template v-slot:[`item.address`]="{ item }">
@@ -44,36 +54,92 @@
             </div>
           </template>
         </v-data-table>
+        <modalComponent
+            :isOpen="isModalOpen"
+            @closeModal="closeModal"
+            :dataRequest="dataRequest"
+            :isCreate="isCreate"
+        />
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script>
+import modalComponent from "@/components/modalComponent.vue";
+import getHome from "@/mixins/getHome";
 export default {
   props: {
     tableData: {
       type: Array,
-    }
+    },
+    homeData: {
+      type: Array,
+    },
   },
+  components: {
+    modalComponent
+  },
+  mixins: [getHome],
   data() {
     return {
-      // loading: false,
       itemsPerPage: 10,
       headers: [
-        { text: '№', value: 'number', sortable: true },
-        { text: 'Создана', value: 'created_at', sortable: true },
-        { text: 'Адресс', value: 'address', sortable: false },
-        { text: 'Заявитель', value: 'applicant', sortable: false },
-        { text: 'Описание', value: 'description', sortable: false },
-        { text: 'Срок', value: 'due_date', sortable: true },
-        { text: 'Статус', value: 'status', sortable: true },
+        { text: '№', value: 'number', class: 'table-header', sortable: true },
+        { text: 'Создана', value: 'created_at', class: 'table-header', sortable: true },
+        { text: 'Адресс', value: 'address', class: 'table-header', sortable: false },
+        { text: 'Заявитель', value: 'applicant', class: 'table-header', sortable: false },
+        { text: 'Описание', value: 'description', class: 'table-header', sortable: false },
+        { text: 'Срок', value: 'due_date', class: 'table-header', sortable: true },
+        { text: 'Статус', value: 'status', class: 'table-header', sortable: true },
       ],
+      search:{
+        premise_id: '',
+        request: ''
+      },
+      premise: [],
+      isModalOpen: false,
+      dataRequest: null,
+      isCreate: true,
     };
   },
   computed: {
     loading(){
       return !this.tableData?.length
+    },
+  },
+  methods: {
+    searchMethod(){
+      console.log('search')
+    },
+    openModal() {
+      this.isCreate = false
+      this.isModalOpen = true
+    },
+    closeModal() {
+      this.isModalOpen = false
+    },
+    openModalCreate() {
+      this.isCreate = true
+      this.isModalOpen = true
+      this.dataRequest = {}
+    },
+    selectRequest(data){
+      this.dataRequest = {
+        id: data.id,
+        number: data?.number,
+        created_at: data?.created_at,
+        premiseId: data?.premise?.id,
+        status: data?.status?.name,
+        premiseFlat: data?.apartment?.id,
+        dueDate: data?.due_date,
+        lastName: data?.applicant?.last_name,
+        firstName: data?.applicant?.first_name,
+        patronymicName: data?.applicant?.patronymic_name,
+        phone: data?.premise?.locality?.phone_code1 ?? '' + ' ' + data?.premise?.locality?.phone_code2 ?? '',
+        description: data?.description,
+      }
+      this.openModal()
     }
   }
 };
@@ -81,47 +147,49 @@ export default {
 
 
 <style scoped lang="scss">
+@import '../assets/variables.css';
 .cursor-pointer:hover {
-  background-color: #edf2f7; /* Серая подсветка при наведении */
+  background-color: #edf2f7;
 }
 .table {
-  &-head {
-    th{
-      color: #50B053;
+  &-container{
+    width: calc(100% - 40px);
+    margin-left: 20px;
+  }
+
+  &__btn {
+    display: flex;
+    justify-content: end;
+    &-create {
+      background-color: var(--primary-color);
+      padding: 8px 16px;
+      border-radius: 4px;
+      color: #fff;
     }
   }
+
+  &__filter{
+    display: flex;
+    gap: 15px;
+  }
+
+  &-head {
+    th{
+      color: var(--primary-color);
+    }
+  }
+
   &-body {
     td{
       padding: 15px 40px 15px 4px;
       border: 1px solid #DDDFE0;
     }
     &__number {
-      background-color: #50B053;
-      padding: 12px 16px;
+      background-color: var(--primary-color);
+      padding: 8px 16px;
       border-radius: 4px;
       color: #fff;
     }
   }
 }
-//.loader {
-//  border: 4px solid rgba(0, 0, 0, 0.1);
-//  border-top: 4px solid #3490dc; /* Цвет вашего лоадера */
-//  border-radius: 50%;
-//  width: 40px;
-//  height: 40px;
-//  animation: spin 1s linear infinite;
-
-//  position: absolute;
-//  top: 50%;
-//  right: 50%;
-//}
-
-//@keyframes spin {
-//  0% {
-//    transform: rotate(0deg);
-//  }
-//  100% {
-//    transform: rotate(360deg);
-//  }
-//}
 </style>
